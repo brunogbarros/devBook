@@ -4,10 +4,9 @@ import (
 	"api/src/banco"
 	"api/src/model"
 	"api/src/repository"
+	"api/src/respostas"
 	"encoding/json"
-	"fmt"
 	"io/ioutil"
-	"log"
 	"net/http"
 )
 
@@ -15,26 +14,29 @@ import (
 func CriarUsuario(w http.ResponseWriter, r *http.Request) {
 	bodyReq, erro := ioutil.ReadAll(r.Body)
 	if erro != nil {
-		log.Fatal(erro)
+		respostas.Erro(w, http.StatusUnprocessableEntity, erro)
+		return
 	}
 	var usuario model.Usuario
 	// json -> struct
 	if erro = json.Unmarshal(bodyReq, &usuario); erro != nil {
-		log.Fatal(erro)
+		respostas.Erro(w, http.StatusBadRequest, erro)
+		return
 	}
 
 	db, erro := banco.Conectar()
 	if erro != nil {
-		log.Fatal(erro)
+		respostas.Erro(w, http.StatusInternalServerError, erro)
+		return
 	}
 	defer db.Close()
 	repositorie := repository.NovoRepositorioDeUsuario(db)
-	usuarioId, erro := repositorie.Criar(usuario)
+	usuario.ID, erro = repositorie.Criar(usuario)
 	if erro != nil {
-		log.Fatal(erro)
+		respostas.Erro(w, http.StatusInternalServerError, erro)
+		return
 	}
-	w.Write([]byte(fmt.Sprintf("Id inserido: %d", usuarioId)))
-
+	respostas.JSON(w, http.StatusCreated, usuario)
 }
 
 //BuscarUsuarios: get all users
