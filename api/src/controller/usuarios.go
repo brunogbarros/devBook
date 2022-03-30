@@ -1,10 +1,40 @@
 package controller
 
-import "net/http"
+import (
+	"api/src/banco"
+	"api/src/model"
+	"api/src/repository"
+	"encoding/json"
+	"fmt"
+	"io/ioutil"
+	"log"
+	"net/http"
+)
 
 //CriarUsuario : create user
 func CriarUsuario(w http.ResponseWriter, r *http.Request) {
-	w.Write([]byte("Criando usuário"))
+	bodyReq, erro := ioutil.ReadAll(r.Body)
+	if erro != nil {
+		log.Fatal(erro)
+	}
+	var usuario model.Usuario
+	// json -> struct
+	if erro = json.Unmarshal(bodyReq, &usuario); erro != nil {
+		log.Fatal(erro)
+	}
+
+	db, erro := banco.Conectar()
+	if erro != nil {
+		log.Fatal(erro)
+	}
+	defer db.Close()
+	repositorie := repository.NovoRepositorioDeUsuario(db)
+	usuarioId, erro := repositorie.Criar(usuario)
+	if erro != nil {
+		log.Fatal(erro)
+	}
+	w.Write([]byte(fmt.Sprintf("Id inserido: %d", usuarioId)))
+
 }
 
 //BuscarUsuarios: get all users
