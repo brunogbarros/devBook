@@ -3,6 +3,7 @@ package repository
 import (
 	"api/src/model"
 	"database/sql"
+	"fmt"
 )
 
 // O repositori vai interagir com o banco
@@ -33,4 +34,27 @@ func (repo usuariosRepository) Criar(usuario model.Usuario) (uint64, error) {
 		return 0, erro
 	}
 	return uint64(ultimoIdInserido), nil
+}
+
+//Buscar : Traz todos os usuários que existem com o nome ou nick inserido
+func (repo usuariosRepository) Buscar(nomeOuNick string) ([]model.Usuario, error) {
+	nomeOuNick = fmt.Sprintf("%%%s%%", nomeOuNick) // para usar o like = %nomeOuNick%
+	linhas, erro := repo.db.Query("select id, nome,nick,email, criadoEm from usuarios where nome LIKE ? or nick LIKE ?",
+		nomeOuNick, nomeOuNick)
+	if erro != nil {
+		return nil, erro
+	}
+	defer linhas.Close()
+
+	var usuarios []model.Usuario
+	for linhas.Next() {
+		var usuario model.Usuario
+		// pega os dados da table ae joga na usuarios acima
+		if erro = linhas.Scan(&usuario.ID, &usuario.Nome, &usuario.Nick, &usuario.Email, &usuario.CriadoEm); erro != nil {
+			return nil, erro
+		}
+		usuarios = append(usuarios, usuario)
+	}
+	return usuarios, nil
+
 }
