@@ -58,3 +58,19 @@ func (repo usuariosRepository) Buscar(nomeOuNick string) ([]model.Usuario, error
 	return usuarios, nil
 
 }
+
+// BuscarPorId : retorna um usuário por id
+func (repo usuariosRepository) BuscarPorId(id uint64) (model.Usuario, error) {
+	linhas, erro := repo.db.Query("select id, nome, nick, email, criadoEm from usuarios where id = ?", id)
+	if erro != nil {
+		return model.Usuario{}, erro
+	}
+	defer linhas.Close()
+	var usuario model.Usuario
+	if linhas.Next() {
+		if erro := linhas.Scan(&usuario.ID, &usuario.Nome, &usuario.Nick, &usuario.Email, &usuario.CriadoEm); erro != nil {
+			return model.Usuario{}, erro
+		}
+	}
+	return usuario, nil
+}
