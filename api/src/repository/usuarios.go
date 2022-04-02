@@ -68,7 +68,7 @@ func (repo usuariosRepository) BuscarPorId(id uint64) (model.Usuario, error) {
 	defer linhas.Close()
 	var usuario model.Usuario
 	if linhas.Next() {
-		if erro := linhas.Scan(&usuario.ID, &usuario.Nome, &usuario.Nick, &usuario.Email, &usuario.CriadoEm); erro != nil {
+		if erro = linhas.Scan(&usuario.ID, &usuario.Nome, &usuario.Nick, &usuario.Email, &usuario.CriadoEm); erro != nil {
 			return model.Usuario{}, erro
 		}
 	}
@@ -82,7 +82,20 @@ func (repo usuariosRepository) Atualizar(id uint64, usuario model.Usuario) error
 		return erro
 	}
 	defer statement.Close()
-	if _, erro := statement.Exec(usuario.Nome, usuario.Nick, usuario.Email, id); erro != nil {
+	if _, erro = statement.Exec(usuario.Nome, usuario.Nick, usuario.Email, id); erro != nil {
+		return erro
+	}
+	return nil
+}
+
+// Deletar : delete by Id
+func (repo usuariosRepository) Deletar(id uint64) error {
+	statement, erro := repo.db.Prepare("DELETE FROM usuarios where id = ?")
+	if erro != nil {
+		return erro
+	}
+	defer statement.Close()
+	if _, erro = statement.Exec(id); erro != nil {
 		return erro
 	}
 	return nil
