@@ -8,6 +8,7 @@ import (
 	"strconv"
 )
 
+// TODO: try to change this to struct based
 var (
 	// StringConnDB String de conexão com banco mysql
 	StringConnDB = ""
