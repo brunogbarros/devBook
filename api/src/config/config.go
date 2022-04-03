@@ -18,6 +18,8 @@ var (
 // Carregar inicializa as variaveis de ambiente
 func Carregar() {
 	var erro error
+	// o .env deve estar no MAIN do pacote, por exemplo, aqui esta dentro de API
+	// se colocado fora de API, derá erro, por default.
 	if erro = godotenv.Load(); erro != nil {
 		log.Fatal(erro)
 	}
