@@ -100,3 +100,20 @@ func (repo usuariosRepository) Deletar(id uint64) error {
 	}
 	return nil
 }
+
+// BuscarPorEmail : busca um usuário por email e retorna o id e senha com hash
+func (repo usuariosRepository) BuscarPorEmail(email string) (model.Usuario, error) {
+	linha, erro := repo.db.Query("SELECT id, senha FROM usuarios WHERE email = ?")
+	if erro != nil {
+		return model.Usuario{}, erro
+	}
+	defer linha.Close()
+	var usuario model.Usuario
+	// percore as linhas, se existirem e popula o objeto usuario acima com os dados contidos na linha
+	if linha.Next() {
+		if erro := linha.Scan(&usuario.ID, &usuario.Senha); erro != nil {
+			return model.Usuario{}, erro
+		}
+	}
+	return usuario, nil
+}
