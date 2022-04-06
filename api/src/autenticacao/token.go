@@ -5,6 +5,17 @@ import (
 	"time"
 )
 
+// O TOKEN É GERADO APENAS UMA VEZ, LOGO, ESTA FUNCAO É INUTIL APÓS
+//func init() {
+//	chave := make([]byte, 64)
+//
+//	if _, erro := rand.Read(chave); erro != nil {
+//		log.Fatal(erro)
+//	}
+//	// secret final gerado randomicamente
+//	stringBase64 := base64.StdEncoding.EncodeToString(chave)
+//}
+
 // CriarToke : Cria o token JWT
 func CriarToke(usuarioId uint64) (string, error) {
 	permissoes := jwt.MapClaims{}
