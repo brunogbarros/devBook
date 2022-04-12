@@ -2,6 +2,7 @@ package autenticacao
 
 import (
 	"api/src/config"
+	"errors"
 	"fmt"
 	jwt "github.com/dgrijalva/jwt-go"
 	"net/http"
@@ -40,8 +41,10 @@ func ValidarToken(r http.Request) error {
 		return erro
 	}
 	// token correto e no formato correto
-	fmt.Println(token)
-	return nil
+	if _, ok := token.Claims.(jwt.MapClaims); ok && token.Valid {
+		return nil
+	}
+	return errors.New("token invalido")
 }
 
 func extrairToken(r http.Request) string {
@@ -55,7 +58,7 @@ func extrairToken(r http.Request) string {
 
 func retornaChaveVerificacao(token *jwt.Token) (any, error) {
 	if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
-		return nil, fmt.Errorf("Método de assinatura incorreto: %v !", token.Header["alg"])
+		return nil, fmt.Errorf("Método de assinatura incorreto: %v ", token.Header["alg"])
 	}
 	return config.SecretKey, nil
 }
