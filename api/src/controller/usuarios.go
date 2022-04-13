@@ -7,6 +7,7 @@ import (
 	"api/src/repository"
 	"api/src/respostas"
 	"encoding/json"
+	"errors"
 	"github.com/gorilla/mux"
 	"io/ioutil"
 	"net/http"
@@ -110,7 +111,7 @@ func AtualizarUsuario(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if usuarioId != usuarioIDnoToken {
-		respostas.Erro(w, http.StatusForbidden, erro)
+		respostas.Erro(w, http.StatusForbidden, errors.New("não é possivel atualizar um usuario que não seja seu"))
 		return
 	}
 
@@ -151,6 +152,16 @@ func DeletarUsuario(w http.ResponseWriter, r *http.Request) {
 	usuarioId, erro := strconv.ParseUint(parametros["usuarioId"], 10, 64)
 	if erro != nil {
 		respostas.Erro(w, http.StatusBadRequest, erro)
+		return
+	}
+
+	usuarioIdFromToken, erro := autenticacao.ExtrairUsuarioID(r)
+	if erro != nil {
+		respostas.Erro(w, http.StatusUnauthorized, erro)
+		return
+	}
+	if usuarioId != usuarioIdFromToken {
+		respostas.Erro(w, http.StatusForbidden, errors.New("voce não tem permissao de deletar este usuario"))
 		return
 	}
 
