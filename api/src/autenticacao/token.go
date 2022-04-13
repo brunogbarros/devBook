@@ -6,6 +6,7 @@ import (
 	"fmt"
 	jwt "github.com/dgrijalva/jwt-go"
 	"net/http"
+	"strconv"
 	"strings"
 	"time"
 )
@@ -34,7 +35,7 @@ func CriarToken(usuarioId uint64) (string, error) {
 }
 
 // ValidarToken : verifica se o token passado pelo usuario é valido
-func ValidarToken(r http.Request) error {
+func ValidarToken(r *http.Request) error {
 	tokenString := extrairToken(r)
 	token, erro := jwt.Parse(tokenString, retornaChaveVerificacao)
 	if erro != nil {
@@ -47,7 +48,7 @@ func ValidarToken(r http.Request) error {
 	return errors.New("token invalido")
 }
 
-func extrairToken(r http.Request) string {
+func extrairToken(r *http.Request) string {
 	token := r.Header.Get("Authorization")
 	// Bearer 123 - token possui 2 partes, pegamos a segunda (o token)
 	if len(strings.Split(token, " ")) == 2 {
@@ -61,4 +62,23 @@ func retornaChaveVerificacao(token *jwt.Token) (any, error) {
 		return nil, fmt.Errorf("Método de assinatura incorreto: %v ", token.Header["alg"])
 	}
 	return config.SecretKey, nil
+}
+
+//ExtrairUsuarioID : retorna o ID do token
+func ExtrairUsuarioID(r *http.Request) (uint64, error) {
+	tokenString := extrairToken(r)
+	token, erro := jwt.Parse(tokenString, retornaChaveVerificacao)
+	if erro != nil {
+		return 0, erro
+	}
+
+	if permissoes, ok := token.Claims.(*jwt.MapClaims); ok && token.Valid {
+		// TODO: understand why this claimns change
+		usuarioID, erro := strconv.ParseUint(fmt.Sprintf("%.0f", permissoes["usuarioI"]), 10, 64)
+		if erro != nil {
+			return 0, erro
+		}
+		return usuarioID, nil
+	}
+	return 0, errors.New("token invalido")
 }

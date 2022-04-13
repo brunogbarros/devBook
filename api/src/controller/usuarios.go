@@ -1,6 +1,7 @@
 package controller
 
 import (
+	"api/src/autenticacao"
 	"api/src/banco"
 	"api/src/model"
 	"api/src/repository"
@@ -101,6 +102,18 @@ func AtualizarUsuario(w http.ResponseWriter, r *http.Request) {
 		respostas.Erro(w, http.StatusBadRequest, erro)
 		return
 	}
+
+	usuarioIDnoToken, erro := autenticacao.ExtrairUsuarioID(r)
+	if erro != nil {
+		respostas.Erro(w, http.StatusUnauthorized, erro)
+		return
+	}
+
+	if usuarioId != usuarioIDnoToken {
+		respostas.Erro(w, http.StatusForbidden, erro)
+		return
+	}
+
 	corpoReq, erro := ioutil.ReadAll(r.Body)
 	if erro != nil {
 		respostas.Erro(w, http.StatusUnprocessableEntity, erro)
