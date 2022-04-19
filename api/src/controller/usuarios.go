@@ -214,3 +214,36 @@ func SeguirUsuario(w http.ResponseWriter, r *http.Request) {
 	}
 	respostas.JSON(w, http.StatusNoContent, nil)
 }
+
+// DeixarDeSeguirUsuario : funcao de parar de sguir o usuario
+func DeixarDeSeguirUsuario(w http.ResponseWriter, r *http.Request) {
+	segudiroId, erro := autenticacao.ExtrairUsuarioID(r)
+	if erro != nil {
+		respostas.Erro(w, http.StatusUnauthorized, erro)
+		return
+	}
+	params := mux.Vars(r)
+	usuarioId, erro := strconv.ParseUint(params["usuarioId"], 10, 64)
+	if erro != nil {
+		respostas.Erro(w, http.StatusBadRequest, erro)
+		return
+	}
+	if segudiroId == usuarioId {
+		respostas.Erro(w, http.StatusForbidden, errors.New("não e possivel parar de seguir vc mesmo"))
+		return
+	}
+	db, erro := banco.Conectar()
+	if erro != nil {
+		respostas.Erro(w, http.StatusInternalServerError, erro)
+		return
+	}
+	defer db.Close()
+
+	repositorio := repository.NovoRepositorioDeUsuario(db)
+	if erro := repositorio.PararDeSeguir(usuarioId, segudiroId); erro != nil {
+		respostas.Erro(w, http.StatusInternalServerError, erro)
+		return
+	}
+	respostas.JSON(w, http.StatusNoContent, nil)
+
+}

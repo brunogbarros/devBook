@@ -118,8 +118,25 @@ func (repo usuariosRepository) BuscarPorEmail(email string) (model.Usuario, erro
 	return usuario, nil
 }
 
+// Seguir: funcao responsavel pela logica de seguir um usuario
 func (repositorio usuariosRepository) Seguir(usuarioId uint, seguidorId uint) error {
 	stmt, erro := repositorio.db.Prepare("insert ignore into seguidores (usuario_id, seguidor_id) values (?, ?)")
+	if erro != nil {
+		return erro
+	}
+	defer stmt.Close()
+
+	if _, erro = stmt.Exec(usuarioId, seguidorId); erro != nil {
+		return erro
+	}
+
+	return nil
+
+}
+
+// PararDeSeguir : funcao para parar de seguir um usuario
+func (repositorio usuariosRepository) PararDeSeguir(usuarioId uint64, seguidorId uint64) error {
+	stmt, erro := repositorio.db.Prepare("delete from seguidores where usuario_id = ? and seguidor_id = ?")
 	if erro != nil {
 		return erro
 	}
