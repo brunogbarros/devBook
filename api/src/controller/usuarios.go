@@ -271,3 +271,8 @@ func BuscarSeguidores(w http.ResponseWriter, r *http.Request) {
 	}
 	respostas.JSON(w, http.StatusOK, seguidores)
 }
+
+// BuscarSeguindo : buscar seguidores que estão sendo seguidos
+func BuscarSeguindo(w http.ResponseWriter, r *http.Request) {
+
+}
